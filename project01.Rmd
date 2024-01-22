@@ -1,0 +1,38 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+## Overview
+This repository contains the code and data for a data analysis project focused on exploring the ridership patterns of the bike-share scheme in Toronto. The analysis is conducted using the R programming language to gain insights into user behaviors, popular routes, and temporal trends.
+
+---
+
+## Data
+
+- Ref:
+  - https://open.toronto.ca/dataset/bike-share-toronto-ridership-data/
+
+```{r}
+# load library
+library(opendatatoronto)
+library(dplyr)
+```
+
+
+```{r}
+# get package
+package <- show_package("7e876c24-177c-4605-9cef-e50dd74c617f")
+package
+```
+```{r}
+resources <- package %>% list_package_resources()
+resources
+dataset_list <- resources %>% head(1) %>% get_resource()
+dataset_list
+```
+
+
+
