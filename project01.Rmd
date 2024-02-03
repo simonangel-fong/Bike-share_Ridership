@@ -10,29 +10,514 @@ This repository contains the code and data for a data analysis project focused o
 
 ---
 
-## Data
+## Data Source
 
 - Ref:
   - https://open.toronto.ca/dataset/bike-share-toronto-ridership-data/
+
+---
+
+- Import libraries.
+
 
 ```{r}
 # load library
 library(opendatatoronto)
 library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+---
+
+## Download and Import data.
+
+- Manually download data files from data source.
+  - We have 52 files of 5-year data, from 2019 to 2023.
+
+- List of all data files
+  
+```{r}
+# Define path of dataset
+DATA_PATH <- "./source/"
+
+
+# get the paths for each data file.
+FILE_PATH_LIST <- list.files(DATA_PATH, pattern = "\\.csv$", full.names = TRUE)
+FILE_PATH_LIST
+```
+
+- Import data from data files.
+
+  - Check the columns of each csv file for data consisitence.
+  - Combine all data into a uniformed dataframe for further anaysis.
+
+
+```{r}
+# # Apply read.csv, a function to import data from csv file, for each file.
+# # Get a list of df
+# df_list <- lapply(FILE_PATH_LIST, read.csv)
+# 
+# 
+# # Union all df by row
+# raw_df <- do.call(rbind, df_list)
+
+```
+
+
+- Optional
+  - Export the uniformed data
+
+```{r}
+# # Path to export
+# output_file <- "./data/dataset.csv"
+# # export
+# write.csv(df, file = output_file, row.names = FALSE)
+```
+  
+---
+
+- Test using selective data
+
+```{r}
+paths <- c(
+  "./source/2019-Q1.csv",
+  "./source/2019-Q2.csv",
+  "./source/2019-Q3.csv",
+  "./source/2019-Q4.csv",
+  "./source/2020-01.csv",
+  "./source/2020-02.csv",
+  "./source/2020-03.csv",
+  "./source/2020-04.csv",
+  "./source/2020-05.csv",
+  "./source/2020-06.csv",
+  "./source/2020-07.csv",
+  "./source/2020-08.csv",
+  "./source/2020-09.csv",
+  "./source/2020-10.csv",
+  "./source/2020-11.csv",
+  "./source/2020-12.csv"
+)
+
+df_list <- lapply(paths, read.csv)
+raw_df <- do.call(rbind, df_list)
+raw_df
+```
+
+- Explore raw data frame
+
+```{r}
+# Data overview
+num_row <- nrow(raw_df)             # total rows
+column_names <- colnames(raw_df)    # column names
+cat("\n\nNumber of rows: ", "\n", num_row)
+cat("\n\nColumn names: ", "\n", column_names)
+
+cat("\n\nDisplay the Structure:\n")
+str(raw_df)
+
+cat("\n\nDisplay Summaries:\n")
+summary(raw_df)
+
+```
+
+## Data Processing
+
+- Handle NA value that exist in the raw data
+
+```{r}
+# Remove rows with any null values
+proc_df <- raw_df[complete.cases(raw_df), ]
+```
+
+- Divide time into year, month, date, hour, and minute.
+
+```{r}
+# Divide "Start.Time" into columns
+proc_df$Start.Time <- as.POSIXct(proc_df$Start.Time, format = "%m/%d/%Y %H:%M")
+proc_df$Start.Year <- as.factor(format(proc_df$Start.Time, "%Y"))
+proc_df$Start.Month <- as.factor(format(proc_df$Start.Time, "%m"))
+proc_df$Start.Date <- as.factor(format(proc_df$Start.Time, "%d"))
+proc_df$Start.Hours <- as.factor(format(proc_df$Start.Time, "%H"))
+proc_df$Start.Minutes <- as.factor(format(proc_df$Start.Time, "%M"))
+
+# Divide "End" into columns
+proc_df$End.Time <- as.POSIXct(proc_df$End.Time, format = "%m/%d/%Y %H:%M")
+proc_df$End.Year <- as.factor(format(proc_df$End.Time, "%Y"))
+proc_df$End.Month <- as.factor(format(proc_df$End.Time, "%m"))
+proc_df$End.Date <- as.factor(format(proc_df$End.Time, "%d"))
+proc_df$End.Hours <- as.factor(format(proc_df$End.Time, "%H"))
+proc_df$End.Minutes <- as.factor(format(proc_df$End.Time, "%M"))
+
+# factor user.type
+proc_df$User.Type <- as.factor(proc_df$User.Type)
+
+# Drop Start.Time and End.Time
+proc_df <- proc_df %>% select(-Start.Time, -End.Time)
+```
+
+
+- Check NA value again, in case of any possible values generated during the data processing.
+
+```{r}
+is_miss <- any(is.na(proc_df))
+
+# if the processed_df contains missing value, drop the rows with missing values and assign to df
+if (is_miss) {
+  df <- proc_df[complete.cases(proc_df), ]
+# otherwise, df = proc_df
+}else{
+  df <- proc_df
+}
+
+is_miss <- any(is.na(df))
+cat("df has missing value? ", is_miss)  # output result
+  
+```
+
+- Data Overview afater data processing.
+
+```{r}
+# Data overview after data processing
+num_row <- nrow(df)             # total rows
+column_names <- colnames(df)    # column names
+cat("\n\nNumber of rows: ", "\n", num_row)
+cat("\n\nColumn names: ", "\n", column_names)
+
+cat("\n\nDisplay the Structure:\n")
+str(df)
+
+cat("\n\nDisplay Summaries:\n")
+summary(df)
+```
+
+```{r}
+df
+head(df, 10)
+```
+
+## Temporal analysis
+
+### Yearly Trip Trends
+
+
+```{r}
+total_trip_by_year <- df %>%
+  group_by(Start.Year) %>%
+  summarize(Total_Trips = n())
+total_trip_by_year
+```
+
+```{r}
+# Create a bar plot
+ggplot(
+  data = total_trip_by_year, 
+  mapping = aes(
+      x = Start.Year, 
+      y = Total_Trips, 
+      fill = Start.Year
+      )
+  ) +
+  geom_bar(
+    stat = "identity"
+  ) +
+  labs(
+    title = "Total Number of Trips per Year",
+    x = "Year",
+    y = "Total Trips"
+  ) +
+  theme_minimal()
+```
+
+### Monthly Total Trip Distribution
+
+- Comparing monthly trip to unveil patterns over the years.
+
+
+```{r}
+monthly_trip_by_year <- df %>%
+  group_by(Start.Year, Start.Month) %>%
+  summarize(Trips = n())
+monthly_trip_by_year
 ```
 
 
 ```{r}
-# get package
-package <- show_package("7e876c24-177c-4605-9cef-e50dd74c617f")
-package
+ggplot(
+  data = monthly_trip_by_year, 
+  mapping = aes(
+    x = Start.Month, 
+    y = Trips, 
+    fill = Start.Month
+    )
+  ) +
+  geom_boxplot() +
+  labs(
+    title = "Monthly Distribution of Trips per Year (Boxplot)",
+    x = "Month",
+    y = "Number of Trips",
+    fill = "Month"
+  ) +
+  theme_minimal()
 ```
+
+### Hourly Total Trip Distribution
+
+- Exploring Patterns Throughout the Day
+
 ```{r}
-resources <- package %>% list_package_resources()
-resources
-dataset_list <- resources %>% head(1) %>% get_resource()
-dataset_list
+trips_per_hour <- df %>%
+  group_by(Start.Hours) %>%
+  summarize(Total_Trips = n()) %>% 
+  arrange(desc(Total_Trips))
+trips_per_hour
 ```
+
+
+```{r}
+# Plot the data
+ggplot(
+    data = trips_per_hour, 
+    mapping = aes(
+    x = Start.Hours, 
+    y = Total_Trips
+      )
+  ) +
+  geom_bar(
+    stat = "identity", 
+    fill = "blue",
+    color = "white", 
+    width = 0.7
+    ) +
+  labs(
+    title = "Number of Trips per Hour",
+    x = "Hour of Day",
+    y = "Number of Trips") +
+  theme_minimal()
+```
+
+### Monthly Trip Distribution Across Months
+
+
+- Seeking patterns and variations among months
+
+
+```{r}
+trips_per_month_hour <- df %>%
+  group_by(
+    Month = Start.Month, 
+    Hour = Start.Hours) %>%
+  summarize(Trip = n())
+trips_per_month_hour
+```
+
+
+```{r}
+ggplot(
+  trips_per_month_hour, 
+  aes(
+    x = Hour, 
+    y = Trip, 
+    fill = Hour
+    )
+  ) +
+  geom_boxplot() +
+  labs(
+    title = "Hourly Distribution of Trips per Month (Boxplot)",
+    x = "Hour of Day",
+    y = "Number of Trips",
+    fill = "Month") +
+  theme_minimal()
+```
+### Monthly Patterns of Rush Hour
+
+```{r}
+rush_hour_data <- df[df$Start.Hours == "08", ]
+
+rush_hour_by_month <- rush_hour_data %>%
+  group_by(Month = Start.Month) %>%
+  summarize(Trip = n())
+
+rush_hour_by_month
+
+```
+
+```{r}
+ggplot(
+  data = rush_hour_by_month, 
+  mapping = aes(
+    x = Month, 
+    y = Trip
+    )
+  ) +
+  geom_bar(
+    stat = "identity", 
+    fill = "blue", 
+    color = "white"
+  ) +
+  labs(
+    title = "Monthly Trip Counts at 8:00 AM",
+    x = "Month",
+    y = "Trip Counts") +
+  theme_minimal()
+```
+
+---
+
+## Duration Analysis
+
+### Mean Duration Yearly Trend
+
+```{r}
+mean_duration_by_year <- df %>%
+  group_by(Year = Start.Year) %>%
+  summarize(Mean_Duration = mean(Trip..Duration) / 60)  # Duration in minutte
+
+mean_duration_by_year
+```
+
+
+```{r}
+ggplot(
+  data = mean_duration_by_year, 
+  mapping = aes(
+    x = Year, 
+    y = Mean_Duration
+    )
+  ) +
+  geom_bar(
+    stat = "identity", 
+    fill = "blue", 
+    color = "white"
+  ) +
+  labs(
+    title = "Average Duration of Trips Trends",
+    x = "Year",
+    y = "Average Duration (minutes)") +
+  theme_minimal()
+```
+
+### Monthly Mean Duration Distribution acorss months
+
+
+```{r}
+mean_duration_by_month <- df %>%
+  group_by(Start.Month) %>%
+  summarize(Average_Duration = mean(Trip..Duration) / 60)  # Convert mean to hours
+
+mean_duration_by_month
+```
+
+```{r}
+ggplot(data = mean_duration_by_month, aes(x = Start.Month, y = Average_Duration)) +
+  geom_bar(stat = "identity", fill = "blue", color = "white") +
+  labs(title = "Mean Duration of Trips per Month",
+       x = "Month",
+       y = "Mean Duration (hours)") +
+  theme_minimal()
+```
+
+
+
+
+```{r}
+monthly_mean_duration_by_year <- df %>%
+  group_by(
+    Year = Start.Year, 
+    Month = Start.Month) %>%
+  summarize(Mean_Duration = mean(Trip..Duration) / 60)  # Convert mean to hours
+
+monthly_mean_duration_by_year
+```
+
+```{r}
+ggplot(
+  data = monthly_mean_duration_by_year, 
+  mapping = aes(
+    x = Month, 
+    y = Mean_Duration, 
+    fill = Month
+    )
+  ) +
+  geom_boxplot() +
+  labs(
+    title = "Monthly Mean Duration Distribution Across Year (Boxplot)",
+    x = "Month",
+    y = "Mean Duration",
+    fill = "Month"
+  ) +
+  theme_minimal()
+```
+
+### Hourly Mean Duration Distribution
+
+```{r}
+mean_duration_by_hour <- df %>%
+  group_by(Hour = Start.Hours) %>%
+  summarize(Mean_Duration = mean(Trip..Duration) / 60)  # Convert mean to hours
+mean_duration_by_hour
+```
+
+```{r}
+ggplot(
+  data = mean_duration_by_hour, 
+  mapping = aes(
+    x = Hour, 
+    y = Mean_Duration
+    )
+  ) +
+  geom_bar(
+    stat = "identity", 
+    fill = "blue", 
+    color = "white"
+  ) +
+  labs(
+    title = "Mean Duration of Trips per Hour",
+    x = "Hour of Day",
+    y = "Mean Duration (minutes)"
+  ) +
+  theme_minimal()
+```
+
+### Hourly Mean Duration Distibution Pattern
+
+
+```{r}
+hourly_mean_duration_by_month <- df %>%
+  group_by(
+    Month = Start.Month, 
+    Hour = Start.Hours
+    ) %>%
+  summarize(Mean_Duration = mean(Trip..Duration) / 60)  # Convert mean to hours
+
+hourly_mean_duration_by_month
+```
+
+```{r}
+ggplot(
+  data = hourly_mean_duration_by_month, 
+  mapping = aes(
+    x = Hour, 
+    y = Mean_Duration, 
+    fill = Hour
+    )
+  ) +
+  geom_boxplot() +
+  labs(
+    title = "Mean Duration of Trips per Hour Across Different Months",
+    x = "Hour of Day",
+    y = "Mean Duration (minutes)",
+    fill = "Month") +
+  theme_minimal()
+```
+
+---
+
+## Geolocation Analysis
+
+---
+
+## User type analysis
 
 
 

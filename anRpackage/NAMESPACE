@@ -1,3 +1,0 @@
-export("cnames", "my_char", "my_data", "my_div", "my_matrix", "my_matrix2", "my_na",
-       "my_name", "my_seq", "my_sqrt", "my_vector", "num_vect", "old.dir", "package",
-       "patients", "resources", "tf", "vect", "vect2", "x", "y", "z")
