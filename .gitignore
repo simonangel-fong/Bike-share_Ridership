@@ -1,2 +1,54 @@
-data/
-source/
+# Ignore everything in the trips_data directory
+source/*
+
+# Ignore specific file types globally
+*.log
+*.csv
+*.dat
+
+# Ignore all .env files
+.env
+
+# Ignore node modules directory in Node.js projects
+node_modules/
+
+# Ignore build output directories
+/build/
+/dist/
+
+# Ignore temporary files created by editors and operating systems
+*.swp
+*~
+.DS_Store
+
+# Ignore Python virtual environments
+venv/
+.env/
+
+# Ignore compiled files
+*.o
+*.pyc
+*.class
+
+# Ignore packaged files
+*.jar
+*.war
+*.ear
+
+# Ignore dependency directories for other languages
+/vendor/
+/bower_components/
+
+# Ignore IDE and editor folders
+/.idea/
+.vscode/
+*.sublime-workspace
+
+# Ignore user-specific files for JetBrains IDEs
+.idea/
+
+# Ignore the thumbnail cache for Windows
+Thumbs.db
+
+# Ignore the file explorer settings file for macOS
+.DS_Store
