@@ -154,6 +154,9 @@ proc_df$End.Minutes <- as.factor(format(proc_df$End.Time, "%M"))
 # factor user.type
 proc_df$User.Type <- as.factor(proc_df$User.Type)
 
+
+```
+```{r}
 # Drop Start.Time and End.Time
 proc_df <- proc_df %>% select(-Start.Time, -End.Time)
 ```
@@ -328,7 +331,7 @@ ggplot(
     title = "Hourly Distribution of Trips per Month (Boxplot)",
     x = "Hour of Day",
     y = "Number of Trips",
-    fill = "Month") +
+    fill = "Hour of Day") +
   theme_minimal()
 ```
 ### Monthly Patterns of Rush Hour
@@ -405,7 +408,7 @@ ggplot(
 ```{r}
 mean_duration_by_month <- df %>%
   group_by(Start.Month) %>%
-  summarize(Average_Duration = mean(Trip..Duration) / 60)  # Convert mean to hours
+  summarize(Average_Duration = mean(Trip..Duration) / 60)  # Convert mean to minutes
 
 mean_duration_by_month
 ```
@@ -415,7 +418,7 @@ ggplot(data = mean_duration_by_month, aes(x = Start.Month, y = Average_Duration)
   geom_bar(stat = "identity", fill = "blue", color = "white") +
   labs(title = "Mean Duration of Trips per Month",
        x = "Month",
-       y = "Mean Duration (hours)") +
+       y = "Mean Duration (minutes)") +
   theme_minimal()
 ```
 
@@ -427,7 +430,7 @@ monthly_mean_duration_by_year <- df %>%
   group_by(
     Year = Start.Year, 
     Month = Start.Month) %>%
-  summarize(Mean_Duration = mean(Trip..Duration) / 60)  # Convert mean to hours
+  summarize(Mean_Duration = mean(Trip..Duration) / 60)  # Convert mean to minutes
 
 monthly_mean_duration_by_year
 ```
@@ -445,7 +448,7 @@ ggplot(
   labs(
     title = "Monthly Mean Duration Distribution Across Year (Boxplot)",
     x = "Month",
-    y = "Mean Duration",
+    y = "Mean Duration (minutes)",
     fill = "Month"
   ) +
   theme_minimal()
@@ -456,7 +459,7 @@ ggplot(
 ```{r}
 mean_duration_by_hour <- df %>%
   group_by(Hour = Start.Hours) %>%
-  summarize(Mean_Duration = mean(Trip..Duration) / 60)  # Convert mean to hours
+  summarize(Mean_Duration = mean(Trip..Duration) / 60)  # Convert mean to minutes
 mean_duration_by_hour
 ```
 
@@ -490,7 +493,7 @@ hourly_mean_duration_by_month <- df %>%
     Month = Start.Month, 
     Hour = Start.Hours
     ) %>%
-  summarize(Mean_Duration = mean(Trip..Duration) / 60)  # Convert mean to hours
+  summarize(Mean_Duration = mean(Trip..Duration) / 60)  # Convert mean to minutes
 
 hourly_mean_duration_by_month
 ```
@@ -509,7 +512,7 @@ ggplot(
     title = "Mean Duration of Trips per Hour Across Different Months",
     x = "Hour of Day",
     y = "Mean Duration (minutes)",
-    fill = "Month") +
+    fill = "Hour of Day") +
   theme_minimal()
 ```
 
@@ -517,9 +520,202 @@ ggplot(
 
 ## Geolocation Analysis
 
+### Hot Start Locations
+
+#### Hot start spot (Top 10)
+```{r}
+
+hot_start_spot <- df %>%
+  group_by(Start.Station.Name) %>%
+  summarize(Total_Trips = n()) %>% 
+  arrange(desc(Total_Trips)) %>% 
+  slice_head(n = 10)
+hot_start_spot
+
+```
+```{r}
+ggplot(
+  data = hot_start_spot, 
+  mapping = aes(
+      x = reorder(Start.Station.Name, -Total_Trips), 
+      y = Total_Trips, 
+      fill = reorder(Start.Station.Name, -Total_Trips)
+      )
+  ) +
+  geom_bar(
+    stat = "identity"
+  ) +
+  labs(
+    title = "Total Number of trips per starting stations",
+    x = "Starting Stations",
+    y = "Number of trips",
+    fill = "Starting Station"
+  ) +
+  theme_minimal()+
+  theme(axis.text.x = element_blank()) 
+
+
+```
+
+#### Hot start street (Top 10)
+
+```{r}
+
+library(stringr)
+
+hot_start_streets <- df %>%
+  separate_rows(Start.Station.Name, sep = " / ") %>% # Separate the station names 
+  mutate(Start.Station.Street = Start.Station.Name) %>%
+  group_by(Start.Station.Street) %>%
+  summarize(Total_Trips = n()) %>%
+  arrange(desc(Total_Trips)) %>% 
+  slice_head(n = 10)
+
+hot_start_streets
+
+```
+```{r}
+ggplot(
+  data = hot_start_streets, 
+  mapping = aes(
+      x = reorder(Start.Station.Street, -Total_Trips), 
+      y = Total_Trips, 
+      fill = reorder(Start.Station.Street, -Total_Trips)
+      )
+  ) +
+  geom_bar(
+    stat = "identity"
+  ) +
+  labs(
+    title = "Total Number of trips per starting street",
+    x = "Starting street",
+    y = "Number of trips",
+    fill = "Starting street"
+  ) +
+  theme_minimal()+
+  theme(axis.text.x = element_blank()) 
+```
+
+
+
+### Hot End Locations
+
+#### Hot End spot (Top 10)
+
+```{r}
+
+hot_end_spot <- df %>%
+  group_by(End.Station.Name) %>%
+  summarize(Total_Trips = n()) %>% 
+  arrange(desc(Total_Trips)) %>% 
+  slice_head(n = 10)
+hot_end_spot
+
+```
+```{r}
+ggplot(
+  data = hot_end_spot, 
+  mapping = aes(
+      x = reorder(End.Station.Name, -Total_Trips), 
+      y = Total_Trips, 
+      fill = reorder(End.Station.Name, -Total_Trips)
+      )
+  ) +
+  geom_bar(
+    stat = "identity"
+  ) +
+  labs(
+    title = "Total Number of trips per ending station",
+    x = "Ending station",
+    y = "Number of trips",
+    fill = "Ending station"
+  ) +
+  theme_minimal()+
+  theme(axis.text.x = element_blank()) 
+```
+
+#### Hot end street (Top 10)
+
+```{r}
+
+hot_end_streets <- df %>%
+  separate_rows(End.Station.Name, sep = " / ") %>% # Separate the station names 
+  mutate(End.Station.Street = End.Station.Name) %>%
+  group_by(End.Station.Street) %>%
+  summarize(Total_Trips = n()) %>%
+  arrange(desc(Total_Trips)) %>% 
+  slice_head(n = 10)
+
+hot_end_streets
+
+
+```
+```{r}
+ggplot(
+  data = hot_end_streets, 
+  mapping = aes(
+      x = reorder(End.Station.Street, -Total_Trips), 
+      y = Total_Trips, 
+      fill = reorder(End.Station.Street, -Total_Trips)
+      )
+  ) +
+  geom_bar(
+    stat = "identity"
+  ) +
+  labs(
+    title = "Total Number of trips per ending street",
+    x = "Ending street",
+    y = "Number of trips",
+    fill = "Ending street"
+  ) +
+  theme_minimal()+
+  theme(axis.text.x = element_blank()) 
+```
+
+
+
+### Hot Trips (Top 10)
+
+```{r}
+
+
+hot_trip <- df %>%
+  mutate(Trip.Spots = paste(Start.Station.Name, End.Station.Name, sep =" -> ")) %>%
+  group_by(Trip.Spots) %>%
+  summarize(Total_Trips = n()) %>% 
+  arrange(desc(Total_Trips)) %>% 
+  slice_head(n = 10)
+hot_trip 
+
+
+```
+```{r}
+ggplot(
+  data = hot_trip, 
+  mapping = aes(
+      x = reorder(Trip.Spots, -Total_Trips), 
+      y = Total_Trips, 
+      fill = reorder(Trip.Spots, -Total_Trips)
+      )
+  ) +
+  geom_bar(
+    stat = "identity"
+  ) +
+  labs(
+    title = "Total Number of trips per origin-destination pair",
+    x = "Origin-destination pair",
+    y = "Number of trips",
+    fill = "Origin-destination pair"
+  ) +
+  theme_minimal()+
+  theme(axis.text.x = element_blank()  ,
+        legend.text = element_text(size = 6))
+```
+
+
 ---
 
-## User type analysis
+
 
 
 
