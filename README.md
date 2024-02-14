@@ -26,10 +26,10 @@ This repository contains the code and data for a data analysis project focused o
     - [x] Yearly Duration Trends
     - [x] Monthly Duration
     - [x] Hourly Duration
-- [ ] Geolocation Analysis
-  - [ ] Hot Start Locations
-  - [ ] Hot End Locations
-  - [ ] Hot Trips
+- [x] Geolocation Analysis
+  - [x] Hot Start Locations
+  - [x] Hot End Locations
+  - [x] Hot Trips
 - [ ] User Type Analysis
   - [ ] Pie Chart
   - [ ] Year membership most use hour

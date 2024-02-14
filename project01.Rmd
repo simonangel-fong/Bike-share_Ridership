@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "Urban Pedals: Unveiling Toronto's Bike Share Story"
 output:
   html_document:
     df_print: paged
@@ -8,7 +8,7 @@ output:
 ---
 
 ## Overview
-This repository contains the code and data for a data analysis project focused on exploring the ridership patterns of the bike-share scheme in Toronto. The analysis is conducted using the R programming language to gain insights into user behaviors, popular routes, and temporal trends.
+This report contains the code and data for a data analysis project focused on exploring the ridership patterns of the bike-share scheme in Toronto. The analysis is conducted using the R programming language to gain insights into user behaviors, popular routes, and temporal trends.
 
 ---
 
@@ -18,6 +18,8 @@ This repository contains the code and data for a data analysis project focused o
   - https://open.toronto.ca/dataset/bike-share-toronto-ridership-data/
 
 ---
+
+## Download and Import data.
 
 - Import libraries.
 
@@ -30,19 +32,13 @@ library(tidyr)
 library(ggplot2)
 ```
 
----
-
-## Download and Import data.
-
 - Manually download data files from data source.
   - We have 52 files of 5-year data, from 2019 to 2023.
-
-- List of all data files
+  - List of all data files
   
 ```{r}
 # Define path of dataset
 DATA_PATH <- "./source/"
-
 
 # get the paths for each data file.
 FILE_PATH_LIST <- list.files(DATA_PATH, pattern = "\\.csv$", full.names = TRUE)
@@ -63,12 +59,134 @@ FILE_PATH_LIST
 # 
 # # Union all df by row
 # raw_df <- do.call(rbind, df_list)
+# raw_df
+```
+
+---
+
+- Test using selective data
+
+```{r}
+# paths <- c(
+#   "./source/2019-Q1.csv",
+#   "./source/2019-Q2.csv",
+#   "./source/2019-Q3.csv",
+#   "./source/2019-Q4.csv",
+#   "./source/2020-01.csv",
+#   "./source/2020-02.csv",
+#   "./source/2020-03.csv",
+#   "./source/2020-04.csv",
+#   "./source/2020-05.csv",
+#   "./source/2020-06.csv",
+#   "./source/2020-07.csv",
+#   "./source/2020-08.csv",
+#   "./source/2020-09.csv",
+#   "./source/2020-10.csv",
+#   "./source/2020-11.csv",
+#   "./source/2020-12.csv"
+# )
+# # paths <- c("./source/2020-01.csv")
+# df_list <- lapply(paths, read.csv)
+# raw_df <- do.call(rbind, df_list)
+# raw_df
+```
+
+---
+
+## Data Processing
+
+### Handling NA and NULL value
+
+- Handle NA value that exist in the raw data
+
+```{r}
+# # Remove rows with any NA values
+# proc_NA_df <- raw_df[complete.cases(raw_df), ]
+# 
+# # Remove rows with "NULL" values
+# proc_null_df <- proc_NA_df %>%
+#   filter(!(End.Station.Name == "NULL" | End.Station.Id == "NULL" | Start.Station.Id =="NULL" | Start.Station.Name == "NULL"))
+# proc_df <- proc_null_df
+```
+
+---
+
+### Converting Time-Dimension Data 
+
+- Divide time into year, month, date, hour, and minute.
+
+```{r}
+# # Divide "Start.Time" into columns
+# proc_df$Start.Time <- as.POSIXct(proc_df$Start.Time, format = "%m/%d/%Y %H:%M")
+# proc_df$Start.Year <- as.factor(format(proc_df$Start.Time, "%Y"))
+# proc_df$Start.Month <- as.factor(format(proc_df$Start.Time, "%m"))
+# proc_df$Start.Date <- as.factor(format(proc_df$Start.Time, "%d"))
+# proc_df$Start.Hours <- as.factor(format(proc_df$Start.Time, "%H"))
+# proc_df$Start.Minutes <- as.factor(format(proc_df$Start.Time, "%M"))
+# 
+# # Divide "End" into columns
+# proc_df$End.Time <- as.POSIXct(proc_df$End.Time, format = "%m/%d/%Y %H:%M")
+# proc_df$End.Year <- as.factor(format(proc_df$End.Time, "%Y"))
+# proc_df$End.Month <- as.factor(format(proc_df$End.Time, "%m"))
+# proc_df$End.Date <- as.factor(format(proc_df$End.Time, "%d"))
+# proc_df$End.Hours <- as.factor(format(proc_df$End.Time, "%H"))
+# proc_df$End.Minutes <- as.factor(format(proc_df$End.Time, "%M"))
+# 
+# # factor user.type
+# proc_df$User.Type <- as.factor(proc_df$User.Type)
+# 
+# 
+# # Drop Start.Time and End.Time
+# proc_df <- proc_df %>% select(-Start.Time, -End.Time)
 
 ```
 
+- Check NA value again, in case of any possible values generated during the data processing.
 
-- Optional
-  - Export the uniformed data
+```{r}
+# is_miss <- any(is.na(proc_df))
+# 
+# # if the processed_df contains missing value, drop the rows with missing values and assign to df
+# if (is_miss) {
+#   df <- proc_df[complete.cases(proc_df), ]
+# # otherwise, df = proc_df
+# }else{
+#   df <- proc_df
+# }
+# 
+# is_miss <- any(is.na(df))
+# cat("df has missing value? ", is_miss)  # output result
+  
+```
+
+- Data Overview after data processing.
+
+```{r}
+# # Data overview after data processing
+# num_row <- nrow(df)             # total rows
+# column_names <- colnames(df)    # column names
+# cat("\n\nNumber of rows: ", "\n", num_row)
+# cat("\n\nColumn names: ", "\n", column_names)
+# 
+# cat("\n\nDisplay the Structure:\n")
+# str(df)
+# 
+# cat("\n\nDisplay Summaries:\n")
+# summary(df)
+```
+
+- Preview data
+
+```{r}
+# df
+# head(df, 10)
+```
+
+---
+
+### Exporting Processed Data(Optional)
+
+- Export the Processed data to permanently store the processed data.
 
 ```{r}
 # # Path to export
@@ -76,111 +194,19 @@ FILE_PATH_LIST
 # # export
 # write.csv(df, file = output_file, row.names = FALSE)
 ```
-  
+
 ---
 
-- Test using selective data
+### ReLoading Processed Data
 
 ```{r}
-paths <- c(
-  "./source/2019-Q1.csv",
-  "./source/2019-Q2.csv",
-  "./source/2019-Q3.csv",
-  "./source/2019-Q4.csv",
-  "./source/2020-01.csv",
-  "./source/2020-02.csv",
-  "./source/2020-03.csv",
-  "./source/2020-04.csv",
-  "./source/2020-05.csv",
-  "./source/2020-06.csv",
-  "./source/2020-07.csv",
-  "./source/2020-08.csv",
-  "./source/2020-09.csv",
-  "./source/2020-10.csv",
-  "./source/2020-11.csv",
-  "./source/2020-12.csv"
-)
-
-df_list <- lapply(paths, read.csv)
-raw_df <- do.call(rbind, df_list)
-raw_df
-```
-
-- Explore raw data frame
-
-```{r}
-# Data overview
-num_row <- nrow(raw_df)             # total rows
-column_names <- colnames(raw_df)    # column names
-cat("\n\nNumber of rows: ", "\n", num_row)
-cat("\n\nColumn names: ", "\n", column_names)
-
-cat("\n\nDisplay the Structure:\n")
-str(raw_df)
-
-cat("\n\nDisplay Summaries:\n")
-summary(raw_df)
-
-```
-
-## Data Processing
-
-- Handle NA value that exist in the raw data
-
-```{r}
-# Remove rows with any null values
-proc_df <- raw_df[complete.cases(raw_df), ]
-```
-
-- Divide time into year, month, date, hour, and minute.
-
-```{r}
-# Divide "Start.Time" into columns
-proc_df$Start.Time <- as.POSIXct(proc_df$Start.Time, format = "%m/%d/%Y %H:%M")
-proc_df$Start.Year <- as.factor(format(proc_df$Start.Time, "%Y"))
-proc_df$Start.Month <- as.factor(format(proc_df$Start.Time, "%m"))
-proc_df$Start.Date <- as.factor(format(proc_df$Start.Time, "%d"))
-proc_df$Start.Hours <- as.factor(format(proc_df$Start.Time, "%H"))
-proc_df$Start.Minutes <- as.factor(format(proc_df$Start.Time, "%M"))
-
-# Divide "End" into columns
-proc_df$End.Time <- as.POSIXct(proc_df$End.Time, format = "%m/%d/%Y %H:%M")
-proc_df$End.Year <- as.factor(format(proc_df$End.Time, "%Y"))
-proc_df$End.Month <- as.factor(format(proc_df$End.Time, "%m"))
-proc_df$End.Date <- as.factor(format(proc_df$End.Time, "%d"))
-proc_df$End.Hours <- as.factor(format(proc_df$End.Time, "%H"))
-proc_df$End.Minutes <- as.factor(format(proc_df$End.Time, "%M"))
-
-# factor user.type
-proc_df$User.Type <- as.factor(proc_df$User.Type)
-
-
-```
-```{r}
-# Drop Start.Time and End.Time
-proc_df <- proc_df %>% select(-Start.Time, -End.Time)
+data_file <- "./data/dataset.csv"
+df <- read.csv(data_file)
+df
 ```
 
 
-- Check NA value again, in case of any possible values generated during the data processing.
-
-```{r}
-is_miss <- any(is.na(proc_df))
-
-# if the processed_df contains missing value, drop the rows with missing values and assign to df
-if (is_miss) {
-  df <- proc_df[complete.cases(proc_df), ]
-# otherwise, df = proc_df
-}else{
-  df <- proc_df
-}
-
-is_miss <- any(is.na(df))
-cat("df has missing value? ", is_miss)  # output result
-  
-```
-
-- Data Overview afater data processing.
+- Data Overview afater loading data.
 
 ```{r}
 # Data overview after data processing
@@ -196,137 +222,109 @@ cat("\n\nDisplay Summaries:\n")
 summary(df)
 ```
 
+- Preview data
+
 ```{r}
-df
+# df
 head(df, 10)
 ```
 
-## Temporal analysis
+## Trip analysis
 
 ### Yearly Trip Trends
 
-
 ```{r}
-total_trip_by_year <- df %>%
-  group_by(Start.Year) %>%
-  summarize(Total_Trips = n())
-total_trip_by_year
+trip_yearly <- df %>%
+  group_by(Year = Start.Year) %>%
+  summarize(Trip = n())
+trip_yearly
 ```
 
 ```{r}
-# Create a bar plot
 ggplot(
-  data = total_trip_by_year, 
+  data = trip_yearly, 
   mapping = aes(
-      x = Start.Year, 
-      y = Total_Trips, 
-      fill = Start.Year
-      )
-  ) +
-  geom_bar(
-    stat = "identity"
-  ) +
+      x = Year, 
+      y = Trip,
+      group = 1
+  )
+) +
+  geom_line() + 
+  geom_point() +
+  geom_text(aes(label = as.character(Trip)), vjust = 1, hjust = 0.5) +
   labs(
-    title = "Total Number of Trips per Year",
+    title = "Yearly Trip Trend",
     x = "Year",
-    y = "Total Trips"
+    y = "Trip"
   ) +
   theme_minimal()
+
 ```
 
-### Monthly Total Trip Distribution
+---
 
-- Comparing monthly trip to unveil patterns over the years.
+### Monthly Trip Distribution
 
+- Comparing monthly trip to unveil patterns over the months
 
 ```{r}
-monthly_trip_by_year <- df %>%
-  group_by(Start.Year, Start.Month) %>%
-  summarize(Trips = n())
-monthly_trip_by_year
+trip_monthly_across_year <- df %>%
+  group_by(
+    Year = Start.Year, 
+    Month = Start.Month
+    ) %>%
+  summarize(Trip = n())
+trip_monthly_across_year
 ```
 
 
 ```{r}
 ggplot(
-  data = monthly_trip_by_year, 
+  data = trip_monthly_across_year, 
   mapping = aes(
-    x = Start.Month, 
-    y = Trips, 
-    fill = Start.Month
+    x = factor(Month), 
+    y = Trip, 
+    fill = factor(Month)
     )
   ) +
-  geom_boxplot() +
+  geom_boxplot(show.legend = FALSE) +
   labs(
-    title = "Monthly Distribution of Trips per Year (Boxplot)",
+    title = "Monthly Distribution of Trips",
     x = "Month",
-    y = "Number of Trips",
+    y = "Trip",
     fill = "Month"
   ) +
   theme_minimal()
 ```
 
-### Hourly Total Trip Distribution
+---
+
+### Hourly Trip Pattern
 
 - Exploring Patterns Throughout the Day
 
-```{r}
-trips_per_hour <- df %>%
-  group_by(Start.Hours) %>%
-  summarize(Total_Trips = n()) %>% 
-  arrange(desc(Total_Trips))
-trips_per_hour
-```
-
 
 ```{r}
-# Plot the data
-ggplot(
-    data = trips_per_hour, 
-    mapping = aes(
-    x = Start.Hours, 
-    y = Total_Trips
-      )
-  ) +
-  geom_bar(
-    stat = "identity", 
-    fill = "blue",
-    color = "white", 
-    width = 0.7
-    ) +
-  labs(
-    title = "Number of Trips per Hour",
-    x = "Hour of Day",
-    y = "Number of Trips") +
-  theme_minimal()
-```
-
-### Monthly Trip Distribution Across Months
-
-
-- Seeking patterns and variations among months
-
-
-```{r}
-trips_per_month_hour <- df %>%
+trip_hourly_across_month <- df %>%
   group_by(
     Month = Start.Month, 
-    Hour = Start.Hours) %>%
+    Hour = Start.Hours
+    ) %>%
   summarize(Trip = n())
-trips_per_month_hour
+trip_hourly_across_month
 ```
 
 
 ```{r}
 ggplot(
-  trips_per_month_hour, 
+  trip_hourly_across_month, 
   aes(
-    x = Hour, 
+    x = factor(Hour), 
     y = Trip, 
-    fill = Hour
+    fill = factor(Hour)
     )
   ) +
-  geom_boxplot() +
+  geom_boxplot(show.legend = FALSE) +
   labs(
     title = "Hourly Distribution of Trips per Month (Boxplot)",
     x = "Hour of Day",
@@ -334,185 +332,111 @@ ggplot(
     fill = "Hour of Day") +
   theme_minimal()
 ```
-### Monthly Patterns of Rush Hour
-
-```{r}
-rush_hour_data <- df[df$Start.Hours == "08", ]
-
-rush_hour_by_month <- rush_hour_data %>%
-  group_by(Month = Start.Month) %>%
-  summarize(Trip = n())
-
-rush_hour_by_month
-
-```
-
-```{r}
-ggplot(
-  data = rush_hour_by_month, 
-  mapping = aes(
-    x = Month, 
-    y = Trip
-    )
-  ) +
-  geom_bar(
-    stat = "identity", 
-    fill = "blue", 
-    color = "white"
-  ) +
-  labs(
-    title = "Monthly Trip Counts at 8:00 AM",
-    x = "Month",
-    y = "Trip Counts") +
-  theme_minimal()
-```
 
 ---
 
 ## Duration Analysis
 
-### Mean Duration Yearly Trend
+### Duration Yearly Trend
 
 ```{r}
-mean_duration_by_year <- df %>%
+duration_yearly <- df %>%
   group_by(Year = Start.Year) %>%
-  summarize(Mean_Duration = mean(Trip..Duration) / 60)  # Duration in minutte
+  summarize(Mean_Duration = round(mean(Trip..Duration) / 60, 2))  
 
-mean_duration_by_year
+duration_yearly
+
 ```
 
 
 ```{r}
 ggplot(
-  data = mean_duration_by_year, 
+  data = duration_yearly, 
   mapping = aes(
-    x = Year, 
-    y = Mean_Duration
+      x = Year, 
+      y = Mean_Duration,
+      group = 1
     )
   ) +
-  geom_bar(
-    stat = "identity", 
-    fill = "blue", 
-    color = "white"
+  geom_line() + 
+  geom_point() +
+  geom_text(
+    aes(
+      label = as.character(Mean_Duration)
+      ), 
+    vjust = 1, 
+    hjust = 0.5
   ) +
   labs(
-    title = "Average Duration of Trips Trends",
+    title = "Average Duration Trend",
     x = "Year",
-    y = "Average Duration (minutes)") +
+    y = "Average Duration"
+  ) +
   theme_minimal()
 ```
 
-### Monthly Mean Duration Distribution acorss months
+---
 
-
-```{r}
-mean_duration_by_month <- df %>%
-  group_by(Start.Month) %>%
-  summarize(Average_Duration = mean(Trip..Duration) / 60)  # Convert mean to minutes
-
-mean_duration_by_month
-```
+### Duration Pattern over Months
 
 ```{r}
-ggplot(data = mean_duration_by_month, aes(x = Start.Month, y = Average_Duration)) +
-  geom_bar(stat = "identity", fill = "blue", color = "white") +
-  labs(title = "Mean Duration of Trips per Month",
-       x = "Month",
-       y = "Mean Duration (minutes)") +
-  theme_minimal()
-```
-
-
-
-
-```{r}
-monthly_mean_duration_by_year <- df %>%
+duration_monthly_across_year <- df %>%
   group_by(
     Year = Start.Year, 
     Month = Start.Month) %>%
-  summarize(Mean_Duration = mean(Trip..Duration) / 60)  # Convert mean to minutes
+  summarize(Mean_Duration = round(mean(Trip..Duration) / 60, 2))  # Convert mean to minutes
 
-monthly_mean_duration_by_year
+duration_monthly_across_year
 ```
 
 ```{r}
 ggplot(
-  data = monthly_mean_duration_by_year, 
+  data = duration_monthly_across_year, 
   mapping = aes(
-    x = Month, 
+    x = factor(Month), 
     y = Mean_Duration, 
-    fill = Month
+    fill = factor(Month)
     )
   ) +
-  geom_boxplot() +
+  geom_boxplot(show.legend = FALSE) +
   labs(
-    title = "Monthly Mean Duration Distribution Across Year (Boxplot)",
+    title = "Monthly Duration Distribution",
     x = "Month",
-    y = "Mean Duration (minutes)",
-    fill = "Month"
-  ) +
-  theme_minimal()
-```
-
-### Hourly Mean Duration Distribution
-
-```{r}
-mean_duration_by_hour <- df %>%
-  group_by(Hour = Start.Hours) %>%
-  summarize(Mean_Duration = mean(Trip..Duration) / 60)  # Convert mean to minutes
-mean_duration_by_hour
-```
-
-```{r}
-ggplot(
-  data = mean_duration_by_hour, 
-  mapping = aes(
-    x = Hour, 
-    y = Mean_Duration
-    )
-  ) +
-  geom_bar(
-    stat = "identity", 
-    fill = "blue", 
-    color = "white"
-  ) +
-  labs(
-    title = "Mean Duration of Trips per Hour",
-    x = "Hour of Day",
     y = "Mean Duration (minutes)"
   ) +
   theme_minimal()
 ```
 
-### Hourly Mean Duration Distibution Pattern
+---
 
+### Duration Pattern throughout A Day
 
 ```{r}
-hourly_mean_duration_by_month <- df %>%
+duration_hourly_across_month <- df %>%
   group_by(
     Month = Start.Month, 
     Hour = Start.Hours
     ) %>%
-  summarize(Mean_Duration = mean(Trip..Duration) / 60)  # Convert mean to minutes
+  summarize(Mean_Duration = round(mean(Trip..Duration) / 60, 2))  # Convert mean to minutes
 
-hourly_mean_duration_by_month
+duration_hourly_across_month
 ```
 
 ```{r}
 ggplot(
-  data = hourly_mean_duration_by_month, 
+  data = duration_hourly_across_month, 
   mapping = aes(
-    x = Hour, 
+    x = factor(Hour), 
     y = Mean_Duration, 
-    fill = Hour
+    fill = factor(Hour)
     )
   ) +
-  geom_boxplot() +
+  geom_boxplot(show.legend = FALSE) +
   labs(
-    title = "Mean Duration of Trips per Hour Across Different Months",
+    title = "Hourly Duration Distribution",
     x = "Hour of Day",
-    y = "Mean Duration (minutes)",
-    fill = "Hour of Day") +
+    y = "Mean Duration (minutes)"
+  ) +
   theme_minimal()
 ```
 
@@ -596,8 +520,6 @@ ggplot(
   theme(axis.text.x = element_blank()) 
 ```
 
-
-
 ### Hot End Locations
 
 #### Hot End spot (Top 10)
@@ -672,8 +594,6 @@ ggplot(
   theme(axis.text.x = element_blank()) 
 ```
 
-
-
 ### Hot Trips (Top 10)
 
 ```{r}
@@ -714,6 +634,84 @@ ggplot(
 
 
 ---
+
+## Skiny Rendering
+
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  tags$head(
+    tags$style(HTML("
+      #sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 200px; /* Set your desired width */
+        background-color: #f8f9fa; /* Set your desired background color */
+        padding: 10px;
+      }
+    "))
+  ),
+  
+  sidebarLayout(
+    sidebarPanel(
+      id = "sidebar",
+      tags$div(
+        tags$h3("Shared-bike Trip Analysis"),
+        tags$ul(
+          tags$li("total trends",
+                  tags$ul(
+                    tags$li(tags$a(href = "#total-yearly", "yearly")),
+                    tags$li(tags$a(href = "#total-monthly", "monthly")),
+                    tags$li(tags$a(href = "#total-hourly", "hourly"))
+                  )
+          ),
+          tags$li("duration",
+                  tags$ul(
+                    tags$li(tags$a(href = "#duration-yearly", "yearly")),
+                    tags$li(tags$a(href = "#duration-monthly", "monthly")),
+                    tags$li(tags$a(href = "#duration-hourly", "hourly"))
+                  )
+          ),
+          tags$li("loc",
+                  tags$ul(
+                    tags$li(tags$a(href = "#loc-street", "street")),
+                    tags$li(tags$a(href = "#loc-pair", "pair"))
+                  )
+          )
+        )
+      )
+    ),
+    mainPanel(
+      h1("Big Title", align = "center"),
+      h2("Section AA", id = "sectionAA"),
+      p("Lorem ipsum dolor sit amet. Rem nihil deleniti et quia vitae nam quibusdam impedit aut galisum laudantium qui quam eius. In alias nihil quo temporibus deserunt ut iusto quasi qui excepturi consectetur sit enim sequi? Et quia similique aut voluptate consectetur ad ratione voluptas. Ut adipisci accusantium qui deleniti vitae et ipsam quae et sequi neque est voluptatem ratione et dolorem eligendi non reiciendis eius. Est magni fugit sed cupiditate quia ut veritatis pariatur et possimus possimus sit amet totam. Vel delectus delectus est eius galisum est voluptatibus possimus aut quia velit. Nam distinctio blanditiis aut repellendus explicabo id reprehenderit porro quo tempore officiis non tempora facilis. Et accusamus eligendi et fugit sint ut necessitatibus magni. Qui numquam eaque 33 placeat alias aut itaque amet est recusandae quaerat sit quidem doloremque. Qui illo voluptatem aut modi molestias nam obcaecati accusamus ab dicta esse et deleniti architecto et pariatur sint vel corrupti commodi. Aut architecto molestias ut quisquam repudiandae qui eaque quidem quo consequatur consequuntur aut dicta quos.
+
+Sed dolore temporibus aut explicabo optio et voluptas obcaecati quo atque galisum aut harum tempore non nulla minima. Id iure iste qui voluptatem iure est consequatur voluptatem eos asperiores quod. Est voluptas nihil qui voluptatem rerum in quasi aperiam ab aspernatur impedit ut officia incidunt hic eligendi magnam et ipsam magnam! Et ratione quisquam aut alias veniam sed mollitia cupiditate est beatae doloribus vel similique maxime vel pariatur molestias. Nam officia modi ut error fuga ut galisum tempore 33 saepe cupiditate non error nesciunt a voluptatibus internos est autem deleniti? Est Quis inventore aut fugiat earum qui velit nihil ea consequatur dolor non velit quia quo dolor repudiandae in optio minima? Ut debitis assumenda est soluta excepturi et laborum omnis. Et totam vitae et labore illo cum ducimus commodi! Qui molestiae fugiat ea rerum dolores vel corrupti maiores ea expedita dolorem est voluptatum commodi sed velit nobis in nulla porro. Ut quia neque ut velit asperiores et consequatur vitae eos consequatur excepturi. Eum corrupti expedita aut quia accusamus nam fuga repellendus! Est omnis quasi et animi cumque et enim eaque aut molestiae harum! Sed enim quis eos velit perspiciatis sed incidunt dolor sed repellat voluptatibus rem sunt nihil sit animi expedita. Aut odio nulla aut laboriosam nesciunt qui soluta magnam eum labore asperiores.
+
+Est neque cupiditate et quam voluptatum aut aspernatur quia et laudantium accusamus qui expedita odio ut Quis delectus. Rem saepe expedita aut tempora sapiente et harum tenetur et tempore fuga vel autem accusamus est similique sint id omnis consequatur. Ex iusto provident est reiciendis commodi qui eveniet neque et cumque Quis est sunt galisum et quibusdam eligendi. Non iure consequatur ut omnis nihil ea soluta deserunt qui fugiat internos? Id eveniet quidem qui doloribus fuga qui eaque debitis qui ipsum nisi ut eaque quae sed error reiciendis. Ex reprehenderit internos et dicta galisum aut voluptate ipsam ut rerum cumque est reprehenderit deserunt est neque doloribus aut voluptate quasi. Sit nobis esse qui velit voluptatem in quia reiciendis et voluptate enim aut mollitia facilis aut consectetur perspiciatis. Et praesentium dolores est galisum dolore cum quia dolorum. Non adipisci praesentium ea delectus alias eum omnis vitae quo cupiditate veniam 33 cupiditate quia. Et aperiam minus qui velit nesciunt quo dolor exercitationem et maiores explicabo ut dolor libero eos voluptas facilis ut culpa facere. Et tenetur fuga aut quia repellendus a aliquid voluptas aut dolorum velit!"),
+h2("Section BB", id = "sectionBB"),
+p("Lorem ipsum dolor sit amet. Rem nihil deleniti et quia vitae nam quibusdam impedit aut galisum laudantium qui quam eius. In alias nihil quo temporibus deserunt ut iusto quasi qui excepturi consectetur sit enim sequi? Et quia similique aut voluptate consectetur ad ratione voluptas. Ut adipisci accusantium qui deleniti vitae et ipsam quae et sequi neque est voluptatem ratione et dolorem eligendi non reiciendis eius. Est magni fugit sed cupiditate quia ut veritatis pariatur et possimus possimus sit amet totam. Vel delectus delectus est eius galisum est voluptatibus possimus aut quia velit. Nam distinctio blanditiis aut repellendus explicabo id reprehenderit porro quo tempore officiis non tempora facilis. Et accusamus eligendi et fugit sint ut necessitatibus magni. Qui numquam eaque 33 placeat alias aut itaque amet est recusandae quaerat sit quidem doloremque. Qui illo voluptatem aut modi molestias nam obcaecati accusamus ab dicta esse et deleniti architecto et pariatur sint vel corrupti commodi. Aut architecto molestias ut quisquam repudiandae qui eaque quidem quo consequatur consequuntur aut dicta quos.
+
+Sed dolore temporibus aut explicabo optio et voluptas obcaecati quo atque galisum aut harum tempore non nulla minima. Id iure iste qui voluptatem iure est consequatur voluptatem eos asperiores quod. Est voluptas nihil qui voluptatem rerum in quasi aperiam ab aspernatur impedit ut officia incidunt hic eligendi magnam et ipsam magnam! Et ratione quisquam aut alias veniam sed mollitia cupiditate est beatae doloribus vel similique maxime vel pariatur molestias. Nam officia modi ut error fuga ut galisum tempore 33 saepe cupiditate non error nesciunt a voluptatibus internos est autem deleniti? Est Quis inventore aut fugiat earum qui velit nihil ea consequatur dolor non velit quia quo dolor repudiandae in optio minima? Ut debitis assumenda est soluta excepturi et laborum omnis. Et totam vitae et labore illo cum ducimus commodi! Qui molestiae fugiat ea rerum dolores vel corrupti maiores ea expedita dolorem est voluptatum commodi sed velit nobis in nulla porro. Ut quia neque ut velit asperiores et consequatur vitae eos consequatur excepturi. Eum corrupti expedita aut quia accusamus nam fuga repellendus! Est omnis quasi et animi cumque et enim eaque aut molestiae harum! Sed enim quis eos velit perspiciatis sed incidunt dolor sed repellat voluptatibus rem sunt nihil sit animi expedita. Aut odio nulla aut laboriosam nesciunt qui soluta magnam eum labore asperiores.
+
+Est neque cupiditate et quam voluptatum aut aspernatur quia et laudantium accusamus qui expedita odio ut Quis delectus. Rem saepe expedita aut tempora sapiente et harum tenetur et tempore fuga vel autem accusamus est similique sint id omnis consequatur. Ex iusto provident est reiciendis commodi qui eveniet neque et cumque Quis est sunt galisum et quibusdam eligendi. Non iure consequatur ut omnis nihil ea soluta deserunt qui fugiat internos? Id eveniet quidem qui doloribus fuga qui eaque debitis qui ipsum nisi ut eaque quae sed error reiciendis. Ex reprehenderit internos et dicta galisum aut voluptate ipsam ut rerum cumque est reprehenderit deserunt est neque doloribus aut voluptate quasi. Sit nobis esse qui velit voluptatem in quia reiciendis et voluptate enim aut mollitia facilis aut consectetur perspiciatis. Et praesentium dolores est galisum dolore cum quia dolorum. Non adipisci praesentium ea delectus alias eum omnis vitae quo cupiditate veniam 33 cupiditate quia. Et aperiam minus qui velit nesciunt quo dolor exercitationem et maiores explicabo ut dolor libero eos voluptas facilis ut culpa facere. Et tenetur fuga aut quia repellendus a aliquid voluptas aut dolorum velit!."),
+h2("Section CC", id = "sectionCC"),
+p("Lorem ipsum dolor sit amet. Rem nihil deleniti et quia vitae nam quibusdam impedit aut galisum laudantium qui quam eius. In alias nihil quo temporibus deserunt ut iusto quasi qui excepturi consectetur sit enim sequi? Et quia similique aut voluptate consectetur ad ratione voluptas. Ut adipisci accusantium qui deleniti vitae et ipsam quae et sequi neque est voluptatem ratione et dolorem eligendi non reiciendis eius. Est magni fugit sed cupiditate quia ut veritatis pariatur et possimus possimus sit amet totam. Vel delectus delectus est eius galisum est voluptatibus possimus aut quia velit. Nam distinctio blanditiis aut repellendus explicabo id reprehenderit porro quo tempore officiis non tempora facilis. Et accusamus eligendi et fugit sint ut necessitatibus magni. Qui numquam eaque 33 placeat alias aut itaque amet est recusandae quaerat sit quidem doloremque. Qui illo voluptatem aut modi molestias nam obcaecati accusamus ab dicta esse et deleniti architecto et pariatur sint vel corrupti commodi. Aut architecto molestias ut quisquam repudiandae qui eaque quidem quo consequatur consequuntur aut dicta quos.
+
+Sed dolore temporibus aut explicabo optio et voluptas obcaecati quo atque galisum aut harum tempore non nulla minima. Id iure iste qui voluptatem iure est consequatur voluptatem eos asperiores quod. Est voluptas nihil qui voluptatem rerum in quasi aperiam ab aspernatur impedit ut officia incidunt hic eligendi magnam et ipsam magnam! Et ratione quisquam aut alias veniam sed mollitia cupiditate est beatae doloribus vel similique maxime vel pariatur molestias. Nam officia modi ut error fuga ut galisum tempore 33 saepe cupiditate non error nesciunt a voluptatibus internos est autem deleniti? Est Quis inventore aut fugiat earum qui velit nihil ea consequatur dolor non velit quia quo dolor repudiandae in optio minima? Ut debitis assumenda est soluta excepturi et laborum omnis. Et totam vitae et labore illo cum ducimus commodi! Qui molestiae fugiat ea rerum dolores vel corrupti maiores ea expedita dolorem est voluptatum commodi sed velit nobis in nulla porro. Ut quia neque ut velit asperiores et consequatur vitae eos consequatur excepturi. Eum corrupti expedita aut quia accusamus nam fuga repellendus! Est omnis quasi et animi cumque et enim eaque aut molestiae harum! Sed enim quis eos velit perspiciatis sed incidunt dolor sed repellat voluptatibus rem sunt nihil sit animi expedita. Aut odio nulla aut laboriosam nesciunt qui soluta magnam eum labore asperiores.
+
+Est neque cupiditate et quam voluptatum aut aspernatur quia et laudantium accusamus qui expedita odio ut Quis delectus. Rem saepe expedita aut tempora sapiente et harum tenetur et tempore fuga vel autem accusamus est similique sint id omnis consequatur. Ex iusto provident est reiciendis commodi qui eveniet neque et cumque Quis est sunt galisum et quibusdam eligendi. Non iure consequatur ut omnis nihil ea soluta deserunt qui fugiat internos? Id eveniet quidem qui doloribus fuga qui eaque debitis qui ipsum nisi ut eaque quae sed error reiciendis. Ex reprehenderit internos et dicta galisum aut voluptate ipsam ut rerum cumque est reprehenderit deserunt est neque doloribus aut voluptate quasi. Sit nobis esse qui velit voluptatem in quia reiciendis et voluptate enim aut mollitia facilis aut consectetur perspiciatis. Et praesentium dolores est galisum dolore cum quia dolorum. Non adipisci praesentium ea delectus alias eum omnis vitae quo cupiditate veniam 33 cupiditate quia. Et aperiam minus qui velit nesciunt quo dolor exercitationem et maiores explicabo ut dolor libero eos voluptas facilis ut culpa facere. Et tenetur fuga aut quia repellendus a aliquid voluptas aut dolorum velit!.")
+    )
+  )
+)
+
+server <- function(input, output) {}
+
+shinyApp(ui, server)
+```
 
 
 
