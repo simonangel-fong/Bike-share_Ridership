@@ -326,7 +326,7 @@ ggplot(
   ) +
   geom_boxplot(show.legend = FALSE) +
   labs(
-    title = "Hourly Distribution of Trips per Month (Boxplot)",
+    title = "Hourly Trips Distribution",
     x = "Hour of Day",
     y = "Number of Trips",
     fill = "Hour of Day") +
@@ -639,6 +639,7 @@ ggplot(
 
 ```{r}
 library(shiny)
+library(ggplot2)
 
 ui <- fluidPage(
   tags$head(
@@ -648,9 +649,14 @@ ui <- fluidPage(
         top: 0;
         left: 0;
         bottom: 0;
-        width: 200px; /* Set your desired width */
+        width: 300px; /* Set your desired width */
         background-color: #f8f9fa; /* Set your desired background color */
         padding: 10px;
+        
+      },
+      #mainPanel {
+        font-size: 24px;
+        padding-right: 200px;
       }
     "))
   ),
@@ -661,20 +667,30 @@ ui <- fluidPage(
       tags$div(
         tags$h3("Shared-bike Trip Analysis"),
         tags$ul(
-          tags$li("total trends",
+          tags$li(
+            tags$a(href = "#source", "Data Source")
+          ),
+          tags$li(
+            tags$a(href = "#processing", "Data Processing")
+          ),
+          # Trip
+          tags$li(
+            tags$a(href = "#trip", "Trip Analysis"),
+            tags$ul(
+              tags$li(tags$a(href = "#yearly-trip", "Yearly Trends")),
+              tags$li(tags$a(href = "#monthly-trip", "The Pattern over Months")),
+              tags$li(tags$a(href = "#hourly-trip", "The Pattern throughout A Day"))
+            )
+          ),
+          # duration
+          tags$li(tags$a(href = "#duration", "Duration Analysis"),
                   tags$ul(
-                    tags$li(tags$a(href = "#total-yearly", "yearly")),
-                    tags$li(tags$a(href = "#total-monthly", "monthly")),
-                    tags$li(tags$a(href = "#total-hourly", "hourly"))
+                    tags$li(tags$a(href = "#yearly-duration", "Yearly Trend")),
+                    tags$li(tags$a(href = "#monthly-duration", "The Pattern over Months")),
+                    tags$li(tags$a(href = "#hourly-duration", "The Pattern throughout A Day"))
                   )
           ),
-          tags$li("duration",
-                  tags$ul(
-                    tags$li(tags$a(href = "#duration-yearly", "yearly")),
-                    tags$li(tags$a(href = "#duration-monthly", "monthly")),
-                    tags$li(tags$a(href = "#duration-hourly", "hourly"))
-                  )
-          ),
+          # location
           tags$li("loc",
                   tags$ul(
                     tags$li(tags$a(href = "#loc-street", "street")),
@@ -685,30 +701,281 @@ ui <- fluidPage(
       )
     ),
     mainPanel(
-      h1("Big Title", align = "center"),
-      h2("Section AA", id = "sectionAA"),
-      p("Lorem ipsum dolor sit amet. Rem nihil deleniti et quia vitae nam quibusdam impedit aut galisum laudantium qui quam eius. In alias nihil quo temporibus deserunt ut iusto quasi qui excepturi consectetur sit enim sequi? Et quia similique aut voluptate consectetur ad ratione voluptas. Ut adipisci accusantium qui deleniti vitae et ipsam quae et sequi neque est voluptatem ratione et dolorem eligendi non reiciendis eius. Est magni fugit sed cupiditate quia ut veritatis pariatur et possimus possimus sit amet totam. Vel delectus delectus est eius galisum est voluptatibus possimus aut quia velit. Nam distinctio blanditiis aut repellendus explicabo id reprehenderit porro quo tempore officiis non tempora facilis. Et accusamus eligendi et fugit sint ut necessitatibus magni. Qui numquam eaque 33 placeat alias aut itaque amet est recusandae quaerat sit quidem doloremque. Qui illo voluptatem aut modi molestias nam obcaecati accusamus ab dicta esse et deleniti architecto et pariatur sint vel corrupti commodi. Aut architecto molestias ut quisquam repudiandae qui eaque quidem quo consequatur consequuntur aut dicta quos.
+      style = "padding-right: 100px; text-align: left;",
+      
+      h1("Urban Pedals:", align = "center"),
+      h3("Unveiling Toronto’s Bike Share Story", align = "center"),
+      h2("Data Source", id = "source"),
+      div(
+        style = "font-size: 18px",
+        p("Historical Bike Share Toronto ridership data."),
+        p("Ref: ",tags$a(href ="https://open.toronto.ca/dataset/bike-share-toronto-ridership-data/", "Toronto Open Data")
+        ),
+      ),
+      tags$hr(),
+      div(style = "height: 50px"),
 
-Sed dolore temporibus aut explicabo optio et voluptas obcaecati quo atque galisum aut harum tempore non nulla minima. Id iure iste qui voluptatem iure est consequatur voluptatem eos asperiores quod. Est voluptas nihil qui voluptatem rerum in quasi aperiam ab aspernatur impedit ut officia incidunt hic eligendi magnam et ipsam magnam! Et ratione quisquam aut alias veniam sed mollitia cupiditate est beatae doloribus vel similique maxime vel pariatur molestias. Nam officia modi ut error fuga ut galisum tempore 33 saepe cupiditate non error nesciunt a voluptatibus internos est autem deleniti? Est Quis inventore aut fugiat earum qui velit nihil ea consequatur dolor non velit quia quo dolor repudiandae in optio minima? Ut debitis assumenda est soluta excepturi et laborum omnis. Et totam vitae et labore illo cum ducimus commodi! Qui molestiae fugiat ea rerum dolores vel corrupti maiores ea expedita dolorem est voluptatum commodi sed velit nobis in nulla porro. Ut quia neque ut velit asperiores et consequatur vitae eos consequatur excepturi. Eum corrupti expedita aut quia accusamus nam fuga repellendus! Est omnis quasi et animi cumque et enim eaque aut molestiae harum! Sed enim quis eos velit perspiciatis sed incidunt dolor sed repellat voluptatibus rem sunt nihil sit animi expedita. Aut odio nulla aut laboriosam nesciunt qui soluta magnam eum labore asperiores.
+      # data processing
+      h2("Data Processing", id = "processing"),
+      div(
+        style = "font-size: 18px",
+        p("Handle NA and 'NULL' Value"),
+        p("Data Overview:"),
+      ),
+      br(),
+      imageOutput("photo"),
+      tags$hr(),
 
-Est neque cupiditate et quam voluptatum aut aspernatur quia et laudantium accusamus qui expedita odio ut Quis delectus. Rem saepe expedita aut tempora sapiente et harum tenetur et tempore fuga vel autem accusamus est similique sint id omnis consequatur. Ex iusto provident est reiciendis commodi qui eveniet neque et cumque Quis est sunt galisum et quibusdam eligendi. Non iure consequatur ut omnis nihil ea soluta deserunt qui fugiat internos? Id eveniet quidem qui doloribus fuga qui eaque debitis qui ipsum nisi ut eaque quae sed error reiciendis. Ex reprehenderit internos et dicta galisum aut voluptate ipsam ut rerum cumque est reprehenderit deserunt est neque doloribus aut voluptate quasi. Sit nobis esse qui velit voluptatem in quia reiciendis et voluptate enim aut mollitia facilis aut consectetur perspiciatis. Et praesentium dolores est galisum dolore cum quia dolorum. Non adipisci praesentium ea delectus alias eum omnis vitae quo cupiditate veniam 33 cupiditate quia. Et aperiam minus qui velit nesciunt quo dolor exercitationem et maiores explicabo ut dolor libero eos voluptas facilis ut culpa facere. Et tenetur fuga aut quia repellendus a aliquid voluptas aut dolorum velit!"),
-h2("Section BB", id = "sectionBB"),
-p("Lorem ipsum dolor sit amet. Rem nihil deleniti et quia vitae nam quibusdam impedit aut galisum laudantium qui quam eius. In alias nihil quo temporibus deserunt ut iusto quasi qui excepturi consectetur sit enim sequi? Et quia similique aut voluptate consectetur ad ratione voluptas. Ut adipisci accusantium qui deleniti vitae et ipsam quae et sequi neque est voluptatem ratione et dolorem eligendi non reiciendis eius. Est magni fugit sed cupiditate quia ut veritatis pariatur et possimus possimus sit amet totam. Vel delectus delectus est eius galisum est voluptatibus possimus aut quia velit. Nam distinctio blanditiis aut repellendus explicabo id reprehenderit porro quo tempore officiis non tempora facilis. Et accusamus eligendi et fugit sint ut necessitatibus magni. Qui numquam eaque 33 placeat alias aut itaque amet est recusandae quaerat sit quidem doloremque. Qui illo voluptatem aut modi molestias nam obcaecati accusamus ab dicta esse et deleniti architecto et pariatur sint vel corrupti commodi. Aut architecto molestias ut quisquam repudiandae qui eaque quidem quo consequatur consequuntur aut dicta quos.
 
-Sed dolore temporibus aut explicabo optio et voluptas obcaecati quo atque galisum aut harum tempore non nulla minima. Id iure iste qui voluptatem iure est consequatur voluptatem eos asperiores quod. Est voluptas nihil qui voluptatem rerum in quasi aperiam ab aspernatur impedit ut officia incidunt hic eligendi magnam et ipsam magnam! Et ratione quisquam aut alias veniam sed mollitia cupiditate est beatae doloribus vel similique maxime vel pariatur molestias. Nam officia modi ut error fuga ut galisum tempore 33 saepe cupiditate non error nesciunt a voluptatibus internos est autem deleniti? Est Quis inventore aut fugiat earum qui velit nihil ea consequatur dolor non velit quia quo dolor repudiandae in optio minima? Ut debitis assumenda est soluta excepturi et laborum omnis. Et totam vitae et labore illo cum ducimus commodi! Qui molestiae fugiat ea rerum dolores vel corrupti maiores ea expedita dolorem est voluptatum commodi sed velit nobis in nulla porro. Ut quia neque ut velit asperiores et consequatur vitae eos consequatur excepturi. Eum corrupti expedita aut quia accusamus nam fuga repellendus! Est omnis quasi et animi cumque et enim eaque aut molestiae harum! Sed enim quis eos velit perspiciatis sed incidunt dolor sed repellat voluptatibus rem sunt nihil sit animi expedita. Aut odio nulla aut laboriosam nesciunt qui soluta magnam eum labore asperiores.
-
-Est neque cupiditate et quam voluptatum aut aspernatur quia et laudantium accusamus qui expedita odio ut Quis delectus. Rem saepe expedita aut tempora sapiente et harum tenetur et tempore fuga vel autem accusamus est similique sint id omnis consequatur. Ex iusto provident est reiciendis commodi qui eveniet neque et cumque Quis est sunt galisum et quibusdam eligendi. Non iure consequatur ut omnis nihil ea soluta deserunt qui fugiat internos? Id eveniet quidem qui doloribus fuga qui eaque debitis qui ipsum nisi ut eaque quae sed error reiciendis. Ex reprehenderit internos et dicta galisum aut voluptate ipsam ut rerum cumque est reprehenderit deserunt est neque doloribus aut voluptate quasi. Sit nobis esse qui velit voluptatem in quia reiciendis et voluptate enim aut mollitia facilis aut consectetur perspiciatis. Et praesentium dolores est galisum dolore cum quia dolorum. Non adipisci praesentium ea delectus alias eum omnis vitae quo cupiditate veniam 33 cupiditate quia. Et aperiam minus qui velit nesciunt quo dolor exercitationem et maiores explicabo ut dolor libero eos voluptas facilis ut culpa facere. Et tenetur fuga aut quia repellendus a aliquid voluptas aut dolorum velit!."),
-h2("Section CC", id = "sectionCC"),
-p("Lorem ipsum dolor sit amet. Rem nihil deleniti et quia vitae nam quibusdam impedit aut galisum laudantium qui quam eius. In alias nihil quo temporibus deserunt ut iusto quasi qui excepturi consectetur sit enim sequi? Et quia similique aut voluptate consectetur ad ratione voluptas. Ut adipisci accusantium qui deleniti vitae et ipsam quae et sequi neque est voluptatem ratione et dolorem eligendi non reiciendis eius. Est magni fugit sed cupiditate quia ut veritatis pariatur et possimus possimus sit amet totam. Vel delectus delectus est eius galisum est voluptatibus possimus aut quia velit. Nam distinctio blanditiis aut repellendus explicabo id reprehenderit porro quo tempore officiis non tempora facilis. Et accusamus eligendi et fugit sint ut necessitatibus magni. Qui numquam eaque 33 placeat alias aut itaque amet est recusandae quaerat sit quidem doloremque. Qui illo voluptatem aut modi molestias nam obcaecati accusamus ab dicta esse et deleniti architecto et pariatur sint vel corrupti commodi. Aut architecto molestias ut quisquam repudiandae qui eaque quidem quo consequatur consequuntur aut dicta quos.
-
-Sed dolore temporibus aut explicabo optio et voluptas obcaecati quo atque galisum aut harum tempore non nulla minima. Id iure iste qui voluptatem iure est consequatur voluptatem eos asperiores quod. Est voluptas nihil qui voluptatem rerum in quasi aperiam ab aspernatur impedit ut officia incidunt hic eligendi magnam et ipsam magnam! Et ratione quisquam aut alias veniam sed mollitia cupiditate est beatae doloribus vel similique maxime vel pariatur molestias. Nam officia modi ut error fuga ut galisum tempore 33 saepe cupiditate non error nesciunt a voluptatibus internos est autem deleniti? Est Quis inventore aut fugiat earum qui velit nihil ea consequatur dolor non velit quia quo dolor repudiandae in optio minima? Ut debitis assumenda est soluta excepturi et laborum omnis. Et totam vitae et labore illo cum ducimus commodi! Qui molestiae fugiat ea rerum dolores vel corrupti maiores ea expedita dolorem est voluptatum commodi sed velit nobis in nulla porro. Ut quia neque ut velit asperiores et consequatur vitae eos consequatur excepturi. Eum corrupti expedita aut quia accusamus nam fuga repellendus! Est omnis quasi et animi cumque et enim eaque aut molestiae harum! Sed enim quis eos velit perspiciatis sed incidunt dolor sed repellat voluptatibus rem sunt nihil sit animi expedita. Aut odio nulla aut laboriosam nesciunt qui soluta magnam eum labore asperiores.
-
-Est neque cupiditate et quam voluptatum aut aspernatur quia et laudantium accusamus qui expedita odio ut Quis delectus. Rem saepe expedita aut tempora sapiente et harum tenetur et tempore fuga vel autem accusamus est similique sint id omnis consequatur. Ex iusto provident est reiciendis commodi qui eveniet neque et cumque Quis est sunt galisum et quibusdam eligendi. Non iure consequatur ut omnis nihil ea soluta deserunt qui fugiat internos? Id eveniet quidem qui doloribus fuga qui eaque debitis qui ipsum nisi ut eaque quae sed error reiciendis. Ex reprehenderit internos et dicta galisum aut voluptate ipsam ut rerum cumque est reprehenderit deserunt est neque doloribus aut voluptate quasi. Sit nobis esse qui velit voluptatem in quia reiciendis et voluptate enim aut mollitia facilis aut consectetur perspiciatis. Et praesentium dolores est galisum dolore cum quia dolorum. Non adipisci praesentium ea delectus alias eum omnis vitae quo cupiditate veniam 33 cupiditate quia. Et aperiam minus qui velit nesciunt quo dolor exercitationem et maiores explicabo ut dolor libero eos voluptas facilis ut culpa facere. Et tenetur fuga aut quia repellendus a aliquid voluptas aut dolorum velit!.")
+      # Trip Analysis
+      h2("Trip analysis", id = "trip"),
+      h3("Yearly Trends", id = "yearly-trip"),
+      tableOutput('trip_yearly_tb'),
+      br(),
+      plotOutput("trip_yearly_plot"),
+      br(),
+      div(
+        style = "font-size: 24px;",
+        p("The annual trip count exhibits a consistent upward trend, doubling from approximately 2.4 million to 4.6 million over the specified period.")
+        ),
+      tags$hr(),
+      
+      # trip monlty
+      h3("The Pattern over Months", id = "monthly-trip"),
+      br(),
+      DT::dataTableOutput("trip_monthly_tb"),
+      br(),
+      plotOutput("trip_monthly_plot"),
+      div(
+        style = "font-size: 24px;",
+        # description
+        p("")
+        ),
+      tags$hr(style = "padding-bottom: 50px"),
+      
+      # trip hourly
+      h3("The Pattern throughout A Day", id = "hourly-trip"),
+      br(),
+      DT::dataTableOutput("trip_hourly_tb"),
+      br(),
+      plotOutput("trip_hourly_plot"),
+      div(
+        style = "font-size: 24px;",
+        # description
+        p("")
+        ),
+      tags$hr(),
+      
+      # Duration
+      h2("Duration Analysis", id = "duration"),
+      
+      # duration yearly
+      h3("Yearly Trend", id = "yearly-duration"),
+      br(),
+      DT::dataTableOutput("duration_yearly_tb"),
+      br(),
+      plotOutput("duration_yearly_plot"),
+      div(
+        style = "font-size: 24px;",
+        # description
+        p("")
+        ),
+      tags$hr(),
+      
+      # duration monthly
+      h3("The Pattern over Months", id = "monthly-duration"),
+      br(),
+      DT::dataTableOutput("duration_monthly_tb"),
+      br(),
+      plotOutput("duration_monthly_plot"),
+      div(
+        style = "font-size: 24px;",
+        # description
+        p("")
+        ),
+      tags$hr(),
+      
+      # duration hourly
+      h3("The Pattern throughout A Day", id = "hourly-duration"),
+      br(),
+      DT::dataTableOutput("duration_hourly_tb"),
+      br(),
+      plotOutput("duration_hourly_plot"),
+      div(
+        style = "font-size: 24px;",
+        # description
+        p("")
+        ),
+      tags$hr(),
+      
+      
     )
   )
 )
 
-server <- function(input, output) {}
+server <- function(input, output) {
+  
+  output$photo <- renderImage({
+    list(
+      src = file.path("info.png"),
+      contentType = "image/png",
+      width = 800
+      )
+  }, deleteFile = FALSE)
+  
+  # trip yearly
+  output$trip_yearly_tb <- renderTable(trip_yearly)
+  output$trip_yearly_plot <- renderPlot({
+    ggplot(
+     data = trip_yearly,
+     mapping = aes(
+     x = Year,
+     y = Trip,
+     group = 1
+     )
+    ) +
+     geom_line() +
+     geom_point() +
+     geom_text(aes(label = as.character(Trip)), vjust = 1, hjust = 0.5) +
+     labs(
+     title = "Yearly Trip Trend",
+     x = "Year",
+     y = "Trip"
+     ) +
+     theme_minimal()
+  })
+  
+  # trip monthly
+  output$trip_monthly_tb <- DT::renderDataTable(DT::datatable({
+    data <- trip_monthly_across_year
+    data
+  }))
+  
+  output$trip_monthly_plot <- renderPlot({
+    ggplot(
+       data = trip_monthly_across_year,
+       mapping = aes(
+       x = factor(Month),
+       y = Trip,
+       fill = factor(Month)
+       )
+       ) +
+       geom_boxplot(show.legend = FALSE) +
+       labs(
+       title = "Monthly Distribution of Trips",
+       x = "Month",
+       y = "Trip",
+       fill = "Month"
+       ) +
+       theme_minimal()
+  })
+
+  # trip hourly
+  output$trip_hourly_tb <- DT::renderDataTable(DT::datatable({
+    data <- trip_hourly_across_month
+    data
+  }))
+  
+  output$trip_hourly_plot <- renderPlot({
+    ggplot(
+      trip_hourly_across_month,
+      aes(
+      x = factor(Hour),
+      y = Trip,
+      fill = factor(Hour)
+      )
+      ) +
+      geom_boxplot(show.legend = FALSE) +
+      labs(
+      title = "Hourly Trip Distribution",
+      x = "Hour of Day",
+      y = "Number of Trips",
+      fill = "Hour of Day") +
+      theme_minimal()
+  })
+  
+  # duration yearly
+  output$duration_yearly_tb <- DT::renderDataTable(DT::datatable({
+    data <- duration_yearly
+    data
+  }))
+  
+  output$duration_yearly_plot <- renderPlot({
+    ggplot(
+      data = duration_yearly,
+      mapping = aes(
+      x = Year,
+      y = Mean_Duration,
+      group = 1
+      )
+      ) +
+      geom_line() +
+      geom_point() +
+      geom_text(
+      aes(
+      label = as.character(Mean_Duration)
+      ),
+      vjust = 1,
+      hjust = 0.5
+      ) +
+      labs(
+      title = "Average Duration Trend",
+      x = "Year",
+      y = "Average Duration"
+      ) +
+      theme_minimal()
+  })
+  
+  
+ # duration monthly
+  output$duration_monthly_tb <- DT::renderDataTable(DT::datatable({
+    data <- duration_monthly_across_year
+    data
+  }))
+  
+  output$duration_monthly_plot <- renderPlot({
+    ggplot(
+     data = duration_monthly_across_year,
+     mapping = aes(
+     x = factor(Month),
+     y = Mean_Duration,
+     fill = factor(Month)
+     )
+     ) +
+     geom_boxplot(show.legend = FALSE) +
+     labs(
+     title = "Monthly Duration Distribution",
+     x = "Month",
+     y = "Mean Duration (minutes)"
+     ) +
+     theme_minimal()
+  })
+  
+  
+   # duration hourly
+  output$duration_hourly_tb <- DT::renderDataTable(DT::datatable({
+    data <- duration_hourly_across_month
+    data
+  }))
+  
+  output$duration_hourly_plot <- renderPlot({
+    ggplot(
+       data = duration_hourly_across_month,
+       mapping = aes(
+       x = factor(Hour),
+       y = Mean_Duration,
+       fill = factor(Hour)
+       )
+       ) +
+       geom_boxplot(show.legend = FALSE) +
+       labs(
+       title = "Hourly Duration Distribution",
+       x = "Hour of Day",
+       y = "Mean Duration (minutes)"
+       ) +
+       theme_minimal()
+  })
+}
 
 shinyApp(ui, server)
 ```

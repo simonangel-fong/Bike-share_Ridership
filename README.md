@@ -30,7 +30,3 @@ This repository contains the code and data for a data analysis project focused o
   - [x] Hot Start Locations
   - [x] Hot End Locations
   - [x] Hot Trips
-- [ ] User Type Analysis
-  - [ ] Pie Chart
-  - [ ] Year membership most use hour
-  - [ ] Year membership most use location
