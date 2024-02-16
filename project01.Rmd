@@ -635,7 +635,7 @@ ggplot(
 
 ---
 
-## Skiny Rendering
+## Shiny Rendering
 
 ```{r}
 library(shiny)
@@ -665,7 +665,7 @@ ui <- fluidPage(
     sidebarPanel(
       id = "sidebar",
       tags$div(
-        tags$h3("Shared-bike Trip Analysis"),
+        tags$h3(tags$a(href = "#title","Urban Pedals")),
         tags$ul(
           tags$li(
             tags$a(href = "#source", "Data Source")
@@ -691,10 +691,11 @@ ui <- fluidPage(
                   )
           ),
           # location
-          tags$li("loc",
+          tags$li(tags$a(href = "#location", "Location Analysis"),
                   tags$ul(
-                    tags$li(tags$a(href = "#loc-street", "street")),
-                    tags$li(tags$a(href = "#loc-pair", "pair"))
+                    tags$li(tags$a(href = "#start-street", "Count of start street")),
+                    tags$li(tags$a(href = "#end-street", "Count of end street")),
+                    tags$li(tags$a(href = "#trip-pairs", "Count of trip pairs"))
                   )
           )
         )
@@ -703,7 +704,7 @@ ui <- fluidPage(
     mainPanel(
       style = "padding-right: 100px; text-align: left;",
       
-      h1("Urban Pedals:", align = "center"),
+      h1("Urban Pedals:", align = "center", id = "title"),
       h3("Unveiling Toronto’s Bike Share Story", align = "center"),
       h2("Data Source", id = "source"),
       div(
@@ -801,6 +802,49 @@ ui <- fluidPage(
       DT::dataTableOutput("duration_hourly_tb"),
       br(),
       plotOutput("duration_hourly_plot"),
+      div(
+        style = "font-size: 24px;",
+        # description
+        p("")
+        ),
+      tags$hr(),
+            
+      
+      # Location
+      h2("Location Analysis", id = "location"),
+      
+      # location start street 
+      h3("Total Number of trips per starting stations", id = "start-street"),
+      br(),
+      DT::dataTableOutput("hot_start_streets_tb"),
+      br(),
+      plotOutput("hot_start_streets_plot"),
+      div(
+        style = "font-size: 24px;",
+        # description
+        p("")
+        ),
+      tags$hr(),
+            
+      # location end street
+      h3("Total Number of trips per ending street", id = "end-street"),
+      br(),
+      DT::dataTableOutput("hot_end_streets_tb"),
+      br(),
+      plotOutput("hot_end_streets_plot"),
+      div(
+        style = "font-size: 24px;",
+        # description
+        p("")
+        ),
+      tags$hr(),
+            
+      # location pairs
+      h3("Total Number of trips per origin-destination pair", id = "trip-pairs"),
+      br(),
+      DT::dataTableOutput("hot_trip_tb"),
+      br(),
+      plotOutput("hot_trip_plot"),
       div(
         style = "font-size: 24px;",
         # description
@@ -952,7 +996,7 @@ server <- function(input, output) {
   })
   
   
-   # duration hourly
+  # duration hourly
   output$duration_hourly_tb <- DT::renderDataTable(DT::datatable({
     data <- duration_hourly_across_month
     data
@@ -975,6 +1019,93 @@ server <- function(input, output) {
        ) +
        theme_minimal()
   })
+
+  # location start street
+  output$hot_start_streets_tb <- DT::renderDataTable(DT::datatable({
+    data <- hot_start_streets
+    data
+  }))
+  
+  output$hot_start_streets_plot <- renderPlot({
+  ggplot(
+    data = hot_start_streets, 
+    mapping = aes(
+        x = reorder(Start.Station.Street, -Total_Trips), 
+        y = Total_Trips, 
+        fill = reorder(Start.Station.Street, -Total_Trips)
+        )
+    ) +
+    geom_bar(
+      stat = "identity"
+    ) +
+    labs(
+      title = "Total Number of trips per starting street",
+      x = "Starting street",
+      y = "Number of trips",
+      fill = "Starting street"
+    ) +
+    theme_minimal()+
+    theme(axis.text.x = element_blank()) 
+  })
+  
+  # location end street
+  output$hot_end_streets_tb <- DT::renderDataTable(DT::datatable({
+    data <- hot_end_streets 
+    data
+  }))
+  
+  output$hot_end_streets_plot <- renderPlot({
+  ggplot(
+    data = hot_end_streets, 
+    mapping = aes(
+        x = reorder(End.Station.Street, -Total_Trips), 
+        y = Total_Trips, 
+        fill = reorder(End.Station.Street, -Total_Trips)
+        )
+    ) +
+    geom_bar(
+      stat = "identity"
+    ) +
+    labs(
+      title = "Total Number of trips per ending street",
+      x = "Ending street",
+      y = "Number of trips",
+      fill = "Ending street"
+    ) +
+    theme_minimal()+
+    theme(axis.text.x = element_blank()) 
+  })
+  
+  # location pairs
+  output$hot_trip_tb <- DT::renderDataTable(DT::datatable({
+    data <- hot_trip
+    data
+  }))
+  
+  output$hot_trip_plot <- renderPlot({
+  ggplot(
+    data = hot_trip, 
+    mapping = aes(
+        x = reorder(Trip.Spots, -Total_Trips), 
+        y = Total_Trips, 
+        fill = reorder(Trip.Spots, -Total_Trips)
+        )
+    ) +
+    geom_bar(
+      stat = "identity"
+    ) +
+    labs(
+      title = "Total Number of trips per origin-destination pair",
+      x = "Origin-destination pair",
+      y = "Number of trips",
+      fill = "Origin-destination pair"
+    ) +
+    theme_minimal()+
+    theme(axis.text.x = element_blank()  ,
+          legend.text = element_text(size = 6))
+  })
+  
+  
 }
 
 shinyApp(ui, server)

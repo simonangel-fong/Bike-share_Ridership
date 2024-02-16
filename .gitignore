@@ -1,5 +1,9 @@
 # Ignore everything in the trips_data directory
 source/*
+backup/*
+.RData
+.Rhistory
+*.html
 
 # Ignore specific file types globally
 *.log
