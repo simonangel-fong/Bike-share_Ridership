@@ -3,7 +3,7 @@ source/*
 backup/*
 .RData
 .Rhistory
-*.html
+# *.html
 
 # Ignore specific file types globally
 *.log
